@@ -46,7 +46,7 @@ class SelfDrivingDummy:
 
     def forward(self):
         print("Forward")
-        self.PWM.setMotorModel(600,600,600,600)
+        self.PWM.setMotorModel(-600,-600,-600,-600)
 
     def backward(self):
         print("Backward")
