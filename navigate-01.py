@@ -17,17 +17,17 @@ class SelfDrivingDummy:
             if dist < 10:
                 self.stop()
                 self.backward()
-                time.sleep(0.2)
+                time.sleep(1)
                 self.stop()
                 direction = random.randint(0,1)
 
                 if direction == 0:
                     self.turn_left()
-                    time.sleep(0.2)
+                    time.sleep(1)
                     self.stop()
                 else:
                     self.turn_right()
-                    time.sleep(0.2)
+                    time.sleep(1)
                     self.stop()
             else:
                 self.forward()
