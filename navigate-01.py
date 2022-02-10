@@ -33,18 +33,23 @@ class SelfDrivingDummy:
                 self.forward()
 
     def turn_right(self):
+        print("Right")
         self.PWM.setMotorModel(1450,1450,-1450,-1450)
 
     def turn_left(self):
+        print("Left")
         self.PWM.setMotorModel(-1450,-1450,1450,1450)
 
     def stop(self):
+        print("Stop")
         self.PWM.setMotorModel(0,0,0,0)
 
     def forward(self):
+        print("Forward")
         self.PWM.setMotorModel(1000,1000,1000,1000)
 
     def backward(self):
+        print("Backward")
         self.PWM.setMotorModel(-1000,-1000,-1000,-1000)
 
         
