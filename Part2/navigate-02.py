@@ -25,11 +25,6 @@ us = Ultrasonic()
 motor = Motor()
 servo = Servo()
 
-origin = (99, 50)
-target = (0, 50)
-detection_list = scan()
-env_map = draw_map(detection_list, 100)
-
 def turn_right():
     print("Right")
     motor.setMotorModel(-1450,-1450,1450,1450)
@@ -105,3 +100,8 @@ def draw_map(detection_list, size):
             
     env_map = binary_dilation(env_map, mask).astype(env_map.dtype)
     return np.rot90(env_map)
+
+origin = (99, 50)
+target = (0, 50)
+detection_list = scan()
+env_map = draw_map(detection_list, 100)
