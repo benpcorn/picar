@@ -247,7 +247,7 @@ target = (0, 50)
 detection_list = scan()
 draw_map(detection_list, 100)
 
-env_map = mapping.draw_map(detection_list, 100)
+env_map = draw_map(detection_list, 100)
 
 path = BFS(env_map, origin, target)
 mov_sequence = moves_sequence(path, origin, target)
