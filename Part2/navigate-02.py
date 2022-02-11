@@ -6,9 +6,6 @@ import RPi.GPIO as GPIO
 from servo import *
 from PCA9685 import PCA9685
 from matplotlib import pyplot as plt
-import mapping
-import get_path
-import followSequence
 import matplotlib
 import time
 import threading
@@ -53,14 +50,14 @@ class AdvancedRouting:
         print("Backward")
         self.PWM.setMotorModel(600,600,600,600)
 
-    def get_distance_at(angle):
+    def get_distance_at(angle, self):
         global angle_distance
         self.pwm_S.setServoPwm('0',angle)
         distance = self.Ultrasonic.get_distance()
         angle_distance = [angle, distance]
         return int(distance), int(angle)
 
-    def scan_step(ref):
+    def scan_step(ref, self):
         global scan_list, current_angle, us_step
         current_angle += us_step
         if current_angle >= max_angle:
@@ -82,7 +79,7 @@ class AdvancedRouting:
         else:
             return False
 
-    def scan():
+    def scan(self):
         while True:
             scan_detection_list = scan_step(30)
             if not scan_detection_list or len(scan_detection_list) < NUM_SAMPLES - 1:
@@ -91,7 +88,7 @@ class AdvancedRouting:
 
         return scan_detection_list
 
-    def draw_map(detection_list, size):
+    def draw_map(detection_list, size, self):
         env_map = np.zeros([size, size])
         mask = np.ones([10, 7])
         point_y, point_x = detection_list[0]
