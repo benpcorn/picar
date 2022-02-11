@@ -48,7 +48,7 @@ def get_distance_at(angle):
     servo.setServoPwm('0',angle)
     distance = us.get_distance()
     angle_distance = [angle, distance]
-    return int(distance), int(angle)
+    return int(distance), int(angle) - 80
 
 def scan():
     scan_list = []
