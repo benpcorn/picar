@@ -18,8 +18,6 @@ angle_distance = [0, 0]
 max_angle = 160
 min_angle = 0
 current_angle = max_angle
-global scan_list
-scan_list = []
 
 us = Ultrasonic()
 motor = Motor()
@@ -53,13 +51,12 @@ def get_distance_at(angle):
     return int(distance), int(angle)
 
 def scan():
+    scan_list = []
     for i in range (min_angle, max_angle, 5):
         scan_list.append(get_distance_at(i))
         time.sleep(0.2)
     servo.setServoPwm('0',80)
-    tmp = scan_list.copy()
-    scan_list = []
-    return tmp
+    return scan_list
 
 def draw_map(scan_list, size):
     env_map = np.zeros([size, size])
