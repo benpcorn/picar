@@ -56,6 +56,9 @@ def scan():
         scan_list.append(get_distance_at(i))
         time.sleep(0.2)
     servo.setServoPwm('0',80)
+    tmp = scan_list.copy()
+    scan_list = []
+    return tmp
 
 def draw_map(scan_list, size):
     env_map = np.zeros([size, size])
