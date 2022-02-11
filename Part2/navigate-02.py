@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 import matplotlib
 import time
 import threading
+import numpy as np
 
 speed = 5
 NUM_SAMPLES = 100
@@ -56,7 +57,26 @@ def scan():
     for i in range (min_angle, max_angle, 5):
         scan_list.append(get_distance_at(i))
         time.sleep(0.2)
+    servo.setServoPwm('0',0)
 
+def draw_map(scan_list, size):
+    env_map = np.zeros([size, size])
+    mask = np.ones([10, 7])
+    point_y, point_x = scan_list[0]
+    for sample in scan_list:
+        distance, angle = sample
+        if distance > 0:
+            x = math.floor((math.sin(math.radians(-angle))) * distance) + 50
+            y = math.floor((math.cos(math.radians(angle))) * distance)
+            if 100 > x > 0 and y < 100 and (abs(point_y - y) <= 1) \
+                    and (abs(point_x - x) <= 1):
+                env_map[x, y] = 1        
+            point_x = x
+            point_y = y
+            
+    env_map = binary_dilation(env_map, mask).astype(env_map.dtype)
+    return np.rot90(env_map)
 
 scan()
 print(scan_list)
+draw_map(scan_list, 100)
