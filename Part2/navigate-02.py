@@ -11,6 +11,7 @@ import matplotlib
 import time
 import threading
 import numpy as np
+from scipy.ndimage import binary_dilation
 
 speed = 5
 NUM_SAMPLES = 100
@@ -58,7 +59,7 @@ def scan():
     for i in range (min_angle, max_angle, 5):
         scan_list.append(get_distance_at(i))
         time.sleep(0.2)
-    servo.setServoPwm('0',0)
+    servo.setServoPwm('0',80)
 
 def draw_map(scan_list, size):
     env_map = np.zeros([size, size])
