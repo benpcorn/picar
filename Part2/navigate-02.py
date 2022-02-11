@@ -18,6 +18,7 @@ angle_distance = [0, 0]
 max_angle = 160
 min_angle = 0
 current_angle = max_angle
+global scan_list
 scan_list = []
 
 us = Ultrasonic()
