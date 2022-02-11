@@ -117,7 +117,7 @@ if __name__ == '__main__':
     try:
         origin = (99, 50)
         target = (0, 50)
-        detection_list = mapping.scan()
-        env_map = mapping.draw_map(detection_list, 100)
+        detection_list = car.scan()
+        env_map = car.draw_map(detection_list, 100)
     except KeyboardInterrupt:
         car.PWM.setMotorModel(0,0,0,0)
