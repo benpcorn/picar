@@ -1,14 +1,7 @@
 import time
 import math
 import numpy as np
-from Motor import *
-from Ultrasonic import *
-import RPi.GPIO as GPIO
-from servo import *
-from PCA9685 import PCA9685
 
-us_servo = Servo()
-ultrasonic = Ultrasonic()
 
 class Mapping():
     def __init__(self, map_width = 101, clearance = 10):
@@ -48,10 +41,6 @@ class Mapping():
          
         return self.scan_map
     
-    def get_distance_at(angle):
-        us_servo.setServoPwm('0',angle)
-        distance = ultrasonic.get_distance()
-        return distance
     
     def scan_angle_and_distance_step(self, scan_step_angle): 
         min_angle = 0
@@ -62,7 +51,7 @@ class Mapping():
         
         cur_angle = min_angle
         while cur_angle <= -min_angle:
-            distance = get_distance_at(cur_angle)
+            distance = fc.get_distance_at(cur_angle)
             angle_distance_list.append([-cur_angle, distance])
             cur_angle += scan_step_angle
         
