@@ -120,6 +120,8 @@ def BFS(env_map, start_node, target_node):
         path.append(target_node)
         while parent[target_node] is not None:
             path.append(parent[target_node])
+            print(target_node)
+            print((parent))
             target_node = parent[target_node]
         path.reverse()
 
@@ -243,9 +245,10 @@ origin = (99, 50)
 target = (0, 50)
 
 detection_list = scan()
-draw_map(detection_list, 100)
 
 env_map = draw_map(detection_list, 100)
+
+print(env_map)
 
 path = BFS(env_map, origin, target)
 mov_sequence = moves_sequence(path, origin, target)
