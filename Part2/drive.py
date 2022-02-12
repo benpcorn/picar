@@ -4,7 +4,7 @@ import cv2
 import os
 import time
 
-from motor import *
+from Motor import *
 from advanced_mapping import Mapping
 from path_finding import Path_finding_A_star
 
