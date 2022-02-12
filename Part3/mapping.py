@@ -422,7 +422,7 @@ class Location:
         """
         :return: speed in cm/s
         """
-        speed_reading = 30
+        speed_reading = 25
         # print(f"Current speed: {speed_reading} cm/s")
         return speed_reading
 
