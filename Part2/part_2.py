@@ -13,9 +13,9 @@ def main():
     time.sleep(0.2)
     motor.setMotorModel(0,0,0,0)
     # Picar start position, lower middle part of the 2D map.
-    origin = (99, 50)
+    target = (99, 50)
     # Target position, used to calculate path.
-    target = (0, 50)
+    origin = (0, 50)
     # Scan area in front of the Picar for obstacles.
     detection_list = mapping.scan()
     # Creates a 2D map and populate obstacles.
