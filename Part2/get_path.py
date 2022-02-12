@@ -47,7 +47,7 @@ def BFS(env_map, start_node, target_node):
 
     if path_found:
         path.append(target_node)
-        while parent[target_node] is not None:
+        while parent.get(target_node) is not None:
             path.append(parent[target_node])
             target_node = parent[target_node]
         path.reverse()
