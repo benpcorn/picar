@@ -41,4 +41,4 @@ if __name__ == "__main__":
     try:
         main()
     finally:
-        fc.stop()
+        motor.setMotorModel(0,0,0,0)

@@ -1,4 +1,3 @@
-import picar_4wd as fc
 import time
 import math
 import numpy as np
