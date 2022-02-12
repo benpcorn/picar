@@ -28,8 +28,8 @@ def stop():
 def main_drive():
     # find directions of the route
     directions = get_directions()
-
-    # Read frames
+    print(directions)
+    input()
     while True:
         forward(1000)
         current_dir = directions[0]
@@ -58,11 +58,14 @@ def get_directions():
 def drive_dir(curr_dir, new_dir):
     if(curr_dir == new_dir):
         forward(1000)
+        print("Forward")
     elif(new_dir == (0,1)):
         turn_right(1000)
+        print("Turn Right")
         curr_dir = new_dir
     elif(new_dir == (1,0)):
         turn_left(1000)
+        print("Turn Left")
         curr_dir = new_dir
 
 if __name__ == "__main__":
