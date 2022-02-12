@@ -44,15 +44,13 @@ def backward():
     motor.setMotorModel(600,600,600,600)
 
 def get_distance_at(angle):
-    global angle_distance
     servo.setServoPwm('0',angle)
     distance = us.get_distance()
-    angle_distance = [angle, distance]
     return int(distance), int(angle) - 80
 
 def scan():
     scan_list = []
-    for i in range (min_angle, max_angle, 5):
+    for i in np.linspace(start=min_angle, stop=max_angle, num=100):
         scan_list.append(get_distance_at(i))
         time.sleep(0.2)
     servo.setServoPwm('0',80)
