@@ -19,7 +19,6 @@ class Orientation(Enum):
     South = 2
     West = 3
 
-# [y, x]
 side_length = 400
 world_map = np.zeros((side_length, side_length))
 step = 10
