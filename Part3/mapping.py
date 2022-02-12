@@ -254,7 +254,7 @@ class Movement:
 
     @staticmethod
     def turn_left(power: int = 50):
-        motor.setMotorModel(1500,1500,-2000,-2000)
+        motor.setMotorModel(1000,1000,-1000,-1000)
         time.sleep(Movement.turn_time)
         motor.setMotorModel(0,0,0,0)
         global curr_orientation
@@ -263,7 +263,7 @@ class Movement:
 
     @staticmethod
     def turn_right(power: int = 50):
-        motor.setMotorModel(-2000,-2000,1500,1500)
+        motor.setMotorModel(-1000,-1000,1000,1000)
         time.sleep(Movement.turn_time)
         motor.setMotorModel(0,0,0,0)
         global curr_orientation
@@ -420,7 +420,7 @@ class Location:
         """
         :return: speed in cm/s
         """
-        speed_reading = 15
+        speed_reading = 20
         # print(f"Current speed: {speed_reading} cm/s")
         return speed_reading
 
