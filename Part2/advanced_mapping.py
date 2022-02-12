@@ -60,7 +60,7 @@ class Mapping():
         
         angle_distance_list = []
         
-        cur_angle = min_angle
+        cur_angle = 0
         while cur_angle <= -min_angle:
             distance = get_distance_at(cur_angle)
             angle_distance_list.append([-cur_angle, distance])
