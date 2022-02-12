@@ -253,7 +253,8 @@ print(env_map)
 path = BFS(env_map, origin, target)
 mov_sequence = moves_sequence(path, origin, target)
 
-env_map[element] = 3
+for element in path:
+    env_map[element] = 3
 
 plt.imshow(env_map)
 plt.show()
