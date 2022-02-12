@@ -263,7 +263,7 @@ class Movement:
 
     @staticmethod
     def turn_right(power: int = 50):
-        setMotorModel(-2000,-2000,1500,1500)
+        motor.setMotorModel(-2000,-2000,1500,1500)
         time.sleep(Movement.turn_time)
         motor.setMotorModel(0,0,0,0)
         global curr_orientation
@@ -274,11 +274,11 @@ class Movement:
     # distance (cm) = time * (power / 100 ) ?
     @staticmethod
     def move_backward(power: int = 10):
-        motor.setMotorModel(-1000,-1000,-1000,-1000)
+        motor.setMotorModel(1000,1000,1000,1000)
 
     @staticmethod
     def move_forward(power: int = 10):
-        motor.setMotorModel(1000,1000,1000,1000) 
+        motor.setMotorModel(-1000,-1000,-1000,-1000) 
 
     @staticmethod
     def compute_moves(path: [Point]) -> [Move]:
