@@ -31,7 +31,7 @@ def main_drive():
 
     # Read frames
     while True:
-        forward(600)
+        forward(800)
         current_dir = directions[0]
         for dir in directions:
             drive_dir(current_dir, dir)
@@ -57,12 +57,12 @@ def get_directions():
 
 def drive_dir(curr_dir, new_dir):
     if(curr_dir == new_dir):
-        forward(600)
+        forward(800)
     elif(new_dir == (0,1)):
-        turn_right(600)
+        turn_right(800)
         curr_dir = new_dir
     elif(new_dir == (1,0)):
-        turn_left(600)
+        turn_left(800)
         curr_dir = new_dir
 
 if __name__ == "__main__":
