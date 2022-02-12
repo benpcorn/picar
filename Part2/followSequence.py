@@ -1,4 +1,3 @@
-import detect
 import time
 from Motor import *
 

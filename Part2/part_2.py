@@ -5,7 +5,6 @@ import followSequence
 import matplotlib
 import time
 import threading
-import detect
 from Motor import *
 
 motor = Motor()
