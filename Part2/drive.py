@@ -26,7 +26,6 @@ def stop():
     motor.setMotorModel(0,0,0,0)
 
 def main_drive():
-    # find directions of the route
     directions = get_directions()
     print(directions)
     input()
@@ -35,9 +34,9 @@ def main_drive():
         current_dir = directions[0]
         for dir in directions:
             drive_dir(current_dir, dir)
+    stop()
 
 def get_directions():
-    # find route based on surroundings
     clearance = 10
     starting = (51, clearance + 1)
     destination = (80, 80)
