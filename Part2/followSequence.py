@@ -16,23 +16,6 @@ def execute_sequence(move_sequence):
         if changeDirection == 0:
 
             while distance > 0:
-                current_time = time.time()
-                if (current_time - stop_detect_delay) < 3:
-                    skip_stop_detection = True
-                else:
-                    skip_stop_detection = False
-
-                if detect.person_detected:
-                    motor.setMotorModel(0,0,0,0)
-                    print("Person detected, waiting ....")
-                    time.sleep(2.5)
-                    continue
-                if detect.stop_sign_detected and not skip_stop_detection:
-                    motor.setMotorModel(0,0,0,0)
-                    print("Stop sign detected, stopping for 8 seconds...")
-                    time.sleep(8)
-                    stop_detect_delay = time.time()
-                    continue
                 motor.setMotorModel(-1000,-1000,-1000,-1000)
                 time.sleep(0.04)
                 distance -= 1
