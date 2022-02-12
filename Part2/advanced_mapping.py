@@ -61,10 +61,11 @@ class Mapping():
         angle_distance_list = []
         
         cur_angle = 0
-        while cur_angle <= -min_angle:
+        while cur_angle <= 160:
             distance = get_distance_at(cur_angle)
             angle_distance_list.append([-cur_angle, distance])
             cur_angle += scan_step_angle
+            time.sleep(.04)
         
         for i in range(1, len(angle_distance_list) - 1):
             pre_dist = angle_distance_list[i - 1][1]
