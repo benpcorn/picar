@@ -62,7 +62,7 @@ def get_status_at(angle, ref1=35, ref2=10):
 
 def get_distance_at(angle):
     global angle_distance
-    us_servo.set_angle(angle)
+    us_servo.setServoPwm('0',angle)
     time.sleep(0.04)
     distance = ultrasonic.get_distance()
     angle_distance = [angle, distance]
