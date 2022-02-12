@@ -506,6 +506,7 @@ def main():
                 Movement.turn_left()
             else:
                 Movement.turn_right()
+            time.sleep(1)
 
         i += 1
         print(f"Ended at {curr_position}")
