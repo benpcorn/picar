@@ -1,7 +1,6 @@
 from enum import Enum
 from point import Point
 from matplotlib import pyplot as plt
-from webpage import WepPage
 from typing import *
 from a_star_search import AStar
 import numpy as np
