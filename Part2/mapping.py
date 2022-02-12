@@ -18,8 +18,8 @@ ANGLE_RANGE = 160
 STEP = ANGLE_RANGE / NUM_SAMPLES
 us_step = STEP
 angle_distance = [0, 0]
-max_angle = ANGLE_RANGE / 2
-min_angle = -ANGLE_RANGE / 2
+max_angle = 160
+min_angle = 0
 current_angle = max_angle
 scan_list = []
 
