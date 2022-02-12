@@ -50,7 +50,7 @@ def get_distance_at(angle):
 
 def scan():
     scan_list = []
-    for i in np.linspace(start=min_angle, stop=max_angle, num=100):
+    for i in np.linspace(start=max_angle, stop=min_angle, num=100):
         scan_list.append(get_distance_at(i))
         time.sleep(0.2)
     servo.setServoPwm('0',80)
