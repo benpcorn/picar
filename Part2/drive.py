@@ -11,34 +11,23 @@ from path_finding import Path_finding_A_star
 motor = Motor()
 
 def forward(power):
-    left_front.set_power(power)
-    left_rear.set_power(power)
-    right_front.set_power(power)
-    right_rear.set_power(power)
+    motor.setMotorModel(-power, -power, -power, -power)
 
 def backward(power):
-    left_front.set_power(-power)
-    left_rear.set_power(-power)
-    right_front.set_power(-power)
-    right_rear.set_power(-power)
+    motor.setMotorModel(power, power, power, power)
 
 def turn_left(power):
     left_front.set_power(-power)
     left_rear.set_power(-power)
     right_front.set_power(power)
     right_rear.set_power(power)
+    motor.setMotorModel(-power, -power, power, power)
 
 def turn_right(power):
-    left_front.set_power(power)
-    left_rear.set_power(power)
-    right_front.set_power(-power)
-    right_rear.set_power(-power)
+    motor.setMotorModel(power, power, -power, -power)
 
 def stop():
-    left_front.set_power(0)
-    left_rear.set_power(0)
-    right_front.set_power(0)
-    right_rear.set_power(0)
+    motor.setMotorModel(0,0,0,0)
 
 def main_drive():
     # find directions of the route
