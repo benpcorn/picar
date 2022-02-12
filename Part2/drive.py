@@ -17,10 +17,6 @@ def backward(power):
     motor.setMotorModel(power, power, power, power)
 
 def turn_left(power):
-    left_front.set_power(-power)
-    left_rear.set_power(-power)
-    right_front.set_power(power)
-    right_rear.set_power(power)
     motor.setMotorModel(-power, -power, power, power)
 
 def turn_right(power):
