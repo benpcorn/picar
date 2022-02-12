@@ -17,10 +17,10 @@ def backward(power):
     motor.setMotorModel(power, power, power, power)
 
 def turn_left(power):
-    motor.setMotorModel(-power, -power, power, power)
+    motor.setMotorModel(power, power, -power, -power)
 
 def turn_right(power):
-    motor.setMotorModel(power, power, -power, -power)
+    motor.setMotorModel(-power, -power, power, power)
 
 def stop():
     motor.setMotorModel(0,0,0,0)
@@ -31,7 +31,7 @@ def main_drive():
 
     # Read frames
     while True:
-        forward(800)
+        forward(1000)
         current_dir = directions[0]
         for dir in directions:
             drive_dir(current_dir, dir)
@@ -57,12 +57,12 @@ def get_directions():
 
 def drive_dir(curr_dir, new_dir):
     if(curr_dir == new_dir):
-        forward(800)
+        forward(1000)
     elif(new_dir == (0,1)):
-        turn_right(800)
+        turn_right(1000)
         curr_dir = new_dir
     elif(new_dir == (1,0)):
-        turn_left(800)
+        turn_left(1000)
         curr_dir = new_dir
 
 if __name__ == "__main__":
