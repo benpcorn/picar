@@ -69,8 +69,8 @@ class Ultrasonic:
         """
         global step
         angle_range = 170
-        max_angle: int = int(angle_range / 2)
-        min_angle = max_angle * -1
+        max_angle = 170
+        min_angle = 0
 
         # (distance, angle)
         measurements: [(float, int)] = []
