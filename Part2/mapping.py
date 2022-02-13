@@ -1,516 +1,147 @@
-from enum import Enum
-from point import Point
-from matplotlib import pyplot as plt
-from typing import *
-from a_star_search import AStar
+import math
 import numpy as np
-import time
-import sys
-import threading
-from Motor import *
-from servo import *
+from constants import *
 from Ultrasonic import *
-
-np.set_printoptions(threshold=sys.maxsize)
-
-class Orientation(Enum):
-    North = 0
-    East = 1
-    South = 2
-    West = 3
-
-side_length = 400
-world_map = np.zeros((side_length, side_length))
-step = 10
-current_servo_angle = 0
-curr_position = None
-curr_orientation = Orientation.North
-
-motor = Motor()
-us = Ultrasonic()
-servo = Servo()
+from servo import *
+from PCA9685 import PCA9685
+import RPi.GPIO as GPIO
 
 
-class Ultrasonic:
-    """
-    Collection of functions to control and compute data from ultrasonic sensor
-    """
+class UltrasonicMap:
+    ANGLE_RANGE = 160
+    STEP = 10
+    us_step = STEP
+    current_angle = 0
+    max_angle = 160
+    min_angle = 0
+    prev_point = (0,0)
+    map_height = 100
+    map_width = 200
+    main_map = np.full([map_height,map_width], UNKNOWN_SPACE, dtype=int)
+    us = Ultrasonic()
+    servo = Servo()
 
-    @staticmethod
-    def find_objects():
-        measurements = Ultrasonic.mapping_scan()
-        points = [Ultrasonic.compute_point(dist=measurement[0], angle=measurement[1]) for measurement in measurements]
+    def plotLine(self, x0, y0, x1, y1, type=UNCLASSIFIED_OBJECT):
+        hit_object = False
+        dx =  abs(x1-x0)
+        sx = 1 if x0<x1 else -1
+        dy = -abs(y1-y0)
+        sy = 1 if y0<y1 else -1
+        err = dx+dy
+        while (True):
+            if (self.main_map[x0][y0] == UNCLASSIFIED_OBJECT):
+                hit_object = True
+            if ((x0-1) >= 0 and self.main_map[x0-1][y0] == UNCLASSIFIED_OBJECT) or ((y0-1) >= 0 and self.main_map[x0][y0-1] == UNCLASSIFIED_OBJECT or ((x0+1) < self.map_height and self.main_map[x0+1][y0] == UNCLASSIFIED_OBJECT) or ((y0+1) < self.map_width and self.main_map[x0][y0+1] == UNCLASSIFIED_OBJECT)):
+                hit_object = True
 
-        global world_map
-        last_point = None
-
-        # Run through points found by sensor
-        for point in points:
-
-            # If point exists, mark as obstacle
-            if point is not None:
-                Ultrasonic.mark_point(point)
-
-                # If last point was marked, mark points in between
-                if last_point is not None:
-                    points_in_between = Ultrasonic.interpolate_points(point, last_point)
-                    for pnt in points_in_between:
-                        Ultrasonic.mark_point(pnt)
-
-            # Set this point as last checked point for interpolation
-            last_point = point
-
-    @staticmethod
-    def mapping_scan() -> [float]:
-        """
-        Scans in front of the car
-        :return: list of distance and angles (cm, degrees)
-        """
-        global step
-        angle_range = 170
-        max_angle = 170
-        min_angle = 0
-
-        # (distance, angle)
-        measurements: [(float, int)] = []
-
-        # Sweep from min to max angle along step
-        for angle in range(min_angle, max_angle, step):
-            servo.setServoPwm('0',angle)
-            time.sleep(0.2)
-            distance = Ultrasonic.get_distance()
-            measurements.append((distance, angle))
-            # print(f"Measurement ({distance}, {angle})")
-
-        return measurements
-
-    @staticmethod
-    def mark_point(point: Point):
-        global side_length
-
-        if 0 <= point.x < side_length and 0 <= point.y < side_length:
-            # Swapped in matrix
-            world_map[point.y][point.x] = 1
-#             print(f"Marking point {point}")
-
-    @staticmethod
-    def compute_point(dist: float, angle: int) -> Point:
-        """
-        Computes where the point is in space that is detected given the angle and curr position
-        relative_point = (dist * sin(angle), dist * cos (angle))
-        absolute_point = relative_point + curr_position
-        :return: (x, y) coordinate
-        """
-
-        # filter out sensor limit readings
-        if np.abs(100 - dist) <= 30 or dist < 0:
-            # print(f"Filtering out {dist}")
-            return None
-
-
-        global curr_position, curr_orientation
-
-        radians = np.deg2rad(angle)
-        # x and y from car's reference frame
-        x = dist * np.sin(radians)
-        y = dist * np.cos(radians)
-
-        """
-        Below are the transformations done to the map reference
-        For example, if the car is facing east and sees something 
-        directly in front of it at 13cm, this translates to a +13cm
-        in the x direction on the board (locked to the world)
-        
-        """
-        if curr_orientation == Orientation.North:
-            # (x, y)
-            relative_point = Point(x, y)
-        elif curr_orientation == Orientation.East:
-            # (y, -x)
-            relative_point = Point(-1 * y, x)
-        elif curr_orientation == Orientation.South:
-            # (-x, -y)
-            relative_point = Point(-1 * x, -1 * y)
-        elif curr_orientation == Orientation.West:
-            # (-y, x)
-            relative_point = Point(y, -1 * x)
-
-        absolute_point = relative_point + curr_position
-
-        return absolute_point
-
-    @staticmethod
-    def get_distance() -> int:
-        """
-        Gets distance from sensor
-        :return: distance in cm
-        """
-        distance: int = us.get_distance()  # cm
-        # print(f"Distance: {distance}cm")
-
-        return distance
-
-    @staticmethod
-    def interpolate_points(p1: Point, p2: Point) -> [Point]:
-        # print(f'Interpolating {p1} and {p2}')
-        if p2.x - p1.x == 0:
-            # print(f'Infinite slope')
-            return []
-        slope = (p2.y - p1.y) / (p2.x - p1.x)
-        y_intercept = p1.y - slope * p1.x
-        # print (f"Slope {slope} and y-intercept {y_intercept}")
-        points_to_fill_in = []
-        sorted_x = sorted([p1.x, p2.x])
-
-        # find all points between 2 points to fill in
-        for x in range(sorted_x[0], sorted_x[1]):
-            y = slope * x + y_intercept
-            new_pnt = Point(x, y)
-            # print(f"New Point {new_pnt}")
-            points_to_fill_in.append(new_pnt)
-
-        return points_to_fill_in
-
-    @staticmethod
-    def avoidance_scan() -> float:
-        """
-        Scans in front of the car and returns the distance
-        :return: distance in cm
-        """
-        global current_servo_angle, step
-        angle_range = 135
-        max_angle = angle_range / 2
-        min_angle = max_angle * -1
-
-        current_servo_angle += step
-        if current_servo_angle > max_angle:
-            current_angle = max_angle
-            step *= -1
-        elif current_servo_angle < min_angle:
-            current_angle = min_angle
-            step *= -1
-
-        servo.setServoPwm('0',current_servo_angle)
-        time.sleep(.2)
-        distance = us.get_distance()
-        return distance
-
-    @staticmethod
-    def pad_world_map():
-        '''
-        Adds extra passing to obstacle found to help with car clearance
-        :return:
-        '''
-        global world_map
-        padded_map = np.copy(world_map)
-        for x in range(12):
-            temp_map = np.copy(padded_map)
-            for row_i, row in enumerate(padded_map):
-                for col_i, col in enumerate(row):
-                    if col == 1:
-                        neighbors = AStar.neighbors(temp_map, Point(col_i, row_i))
-                        for neighbor in neighbors:
-                            if neighbor != curr_position:
-                                temp_map[neighbor.y][neighbor.x] = 1
-            padded_map = temp_map
-
-        return padded_map
-
-class Movement:
-    """
-    Moves the car in each direction
-    """
-
-    class Direction(Enum):
-
-        Left = 0
-        Right = 1
-
-        def turn(self):
-            """
-            Picks random direction and turns 90 degrees
-            and turns in that direction
-            :return: None
-            """
-
-            if self == Movement.Direction.Left:
-                Movement.turn_left()
-            else:
-                Movement.turn_right()
-
-    class Move:
-        class Type(Enum):
-            Forward = 0
-            Left = 1
-            Right = 2
-            Backward = 3
-
-        def __init__(self, type_of_move: Type, amount: int = None):
-            self.type = type_of_move
-            self.amount = amount
-
-    turn_time = .55
-
-    @staticmethod
-    def turn_left(power: int = 50):
-        motor.setMotorModel(1500,1500,-2000,-2000)
-        #time.sleep(Movement.turn_time)
-        time.sleep(1)
-        motor.setMotorModel(0,0,0,0)
-        global curr_orientation
-        curr_orientation = Location.update_orientation(Movement.Direction.Left)
-        print(f"New orientation {curr_orientation}")
-
-    @staticmethod
-    def turn_right(power: int = 50):
-        motor.setMotorModel(-2000,-2000,1500,1500) 
-        #time.sleep(Movement.turn_time)
-        time.sleep(1)
-        motor.setMotorModel(0,0,0,0)
-        global curr_orientation
-        curr_orientation = Location.update_orientation(Movement.Direction.Right)
-        print(f"New orientation {curr_orientation}")
-
-    # 100 power over 1s is 1cm
-    # distance (cm) = time * (power / 100 ) ?
-    @staticmethod
-    def move_backward(power: int = 10):
-        motor.setMotorModel(1000,1000,1000,1000)
-
-    @staticmethod
-    def move_forward(power: int = 10):
-        motor.setMotorModel(-1000,-1000,-1000,-1000) 
-
-    @staticmethod
-    def compute_moves(path: [Point]) -> [Move]:
-        global curr_orientation
-
-        temp_orientation = curr_orientation
-
-        last_point = None
-        forward = None
-        moves = []
-        for next_point in path:
-            if next_point is None or last_point is None:
-                last_point = next_point
-                continue
-            # Still forward
-            if temp_orientation in [Orientation.North, Orientation.South] and last_point.x == next_point.x \
-                    or temp_orientation in [Orientation.East, Orientation.West] and last_point.y == next_point.y:
-                if forward is None:
-                    forward = Movement.Move(Movement.Move.Type.Forward, 0)
-                forward.amount += 1
-            elif next_point.x > last_point.x and temp_orientation == Orientation.North or \
-                    next_point.x < last_point.x and temp_orientation == Orientation.South or \
-                    next_point.y < last_point.y and temp_orientation == Orientation.West or \
-                    next_point.y > last_point.y and temp_orientation == Orientation.East:
-
-                if forward is not None:
-                    print(f"Move forward for {forward.amount}")
-                    moves.append(forward)
-                print("Turn left")
-                moves.append(Movement.Move(Movement.Move.Type.Left))
-                temp_orientation = Location.update_orientation(Movement.Direction.Left, orientation=temp_orientation)
-                forward = Movement.Move(Movement.Move.Type.Forward, 0)
-            else:
-                if forward is not None:
-                    print(f"Move forward for {forward.amount}")
-                    moves.append(forward)
-                print("Turn right")
-                moves.append(Movement.Move(Movement.Move.Type.Right))
-                temp_orientation = Location.update_orientation(Movement.Direction.Right, orientation=temp_orientation)
-                forward = Movement.Move(Movement.Move.Type.Forward, 0)
-
-            last_point = next_point
-
-        print(f"Move forward for {forward.amount}")
-        moves.append(forward)
-
-        return moves
-
-
-found_stop_sign = False
-
-class Location:
-    """
-    Maintains location of car in space
-    """
-
-    @staticmethod
-    def monitor_location(stop_at: int):
-        speeds = []
-        start_time = time.perf_counter()
-        while True:
-            global found_stop_sign
-            if found_stop_sign:
-                motor.setMotorModel(0,0,0,0)
-                continue
-            Movement.move_forward()
-            speeds.append(Location.speed())
-            elapsed_time = time.perf_counter() - start_time
-            distance = Location.distance_traveled(elapsed_time, speeds)
-            # print(f"{distance}")
-
-            if abs(distance - stop_at) < .5:
-                global stopped_moving
+            elif (type == UNCLASSIFIED_OBJECT or not hit_object):
+                self.main_map[x0][y0] = type
+            if (x0 == x1 and y0 == y1):
                 break
+            e2 = 2*err
+            if (e2 >= dy):
+                err += dy
+                x0 += sx
+            if (e2 <= dx):
+                err += dx
+                y0 += sy
 
-        motor.setMotorModel(0,0,0,0)
+    '''
+    Performs ultrasonic scanning for one angle and updates the main map accordingly
+    '''
+    def scan_step_return_distances(self):
+        # set the current angle
+        self.current_angle += self.us_step
+        if self.current_angle >= self.max_angle:
+            self.current_angle = self.max_angle
+            self.us_step = -self.STEP
+        elif self.current_angle <= self.min_angle:
+            self.current_angle = self.min_angle
+            self.us_step = self.STEP
+        
+        # find the distance to the object and the x/y components
+        servo.setServoPwm('0',self.current_angle)
+        distance = us.get_distance()
+        y_idx = round((math.cos(math.radians((self.current_angle)))*distance))
+        x_idx = round((math.sin(math.radians((self.current_angle)))*distance))
+        x_idx = x_idx + math.floor(self.map_width/2) # shift horizontal distances by 1/2 the size of the grid for indexing
 
-        Location.update_location(distance)
-
-    @staticmethod
-    def update_location(new_location: float):
-        """
-        :return:
-        """
-
-        global curr_orientation, curr_position
-        if curr_orientation == Orientation.North:
-            # (x, y)
-            relative_point = Point(0, new_location)
-        elif curr_orientation == Orientation.East:
-            # (y, -x)
-            relative_point = Point(-1 * new_location, 0)
-        elif curr_orientation == Orientation.South:
-            # (-x, -y)
-            relative_point = Point(0, -1 * new_location)
-        elif curr_orientation == Orientation.West:
-            # (-y, x)
-            relative_point = Point(new_location, 0)
-
-        curr_position += relative_point
-
-        print(f"New position {curr_position}")
-
-    @staticmethod
-    def update_orientation(turn_direction: Movement.Direction, orientation=None):
-        """
-        :return:
-        """
-
-        if orientation == None:
-            global curr_orientation
-            updated = curr_orientation
+        # save the objects coordinates and their distances/angles (reject ones that are far away or not detected)
+        if distance != -2 and y_idx < self.map_height and x_idx >= 0 and x_idx < self.map_width:
+            self.main_map[y_idx][x_idx] = UNCLASSIFIED_OBJECT
+            
+            # if the object we got is near another one we just scanned, draw a line between them to consider them one object
+            if (self.prev_point[0] != 0 and self.prev_point[1] != 0):
+                if (((self.prev_point[0] - y_idx)**2) + ((self.prev_point[1] - x_idx)**2) < 30**2):
+                    # print("drawing line from ", prev_point, "to ", (y_idx,x_idx))
+                    self.plotLine(self.prev_point[0], self.prev_point[1], y_idx, x_idx)
+            self.prev_point = (y_idx,x_idx)
         else:
-            updated = orientation
+            self.prev_point = (0,0)
 
-        if turn_direction == Movement.Direction.Left:
-            value = -1
-        else:
-            value = 1
-        updated = Orientation((updated.value + value) % 4)
-        return updated
+    def mark_free_space(self):
+        for i in range(self.map_height):
+            self.plotLine(0, int(self.map_width/2), i, 0, type=FREE_SPACE)
+            self.plotLine(0, int(self.map_width/2), i, self.map_width-1, type=FREE_SPACE)
+        for i in range(self.map_width):
+            self.plotLine(0, int(self.map_width/2), self.map_height-1, i, type=FREE_SPACE)
+
+    '''
+    The condensed map stores one element for every 5x5 square in the main map.
+    - If the corresponding 5x5 grid contains any objects, the element is marked as an 
+        object, regardless of the other values in the 5x5 square.
+    - If the corresponding 5x5 grid contains free space and no objects, the element is marked as free
+    - If all 25 elements in the 5x5 grid are unknown space, the element is marked as unknown space
+    '''
+    @staticmethod
+    def condense_map(map, scale_factor=GRANULARITY):
+        condensed_height = math.floor(map.shape[0]/scale_factor)
+        condensed_width = math.floor(map.shape[1]/scale_factor)
+        condensed_map = np.full([condensed_height, condensed_width], UNKNOWN_SPACE, dtype=int)
+
+        for i in range(map.shape[0]):
+            for j in range(map.shape[1]):
+                condensed_i = math.floor(i/scale_factor)
+                condensed_j = math.floor(j/scale_factor)
+                if (map[i][j] == UNCLASSIFIED_OBJECT):
+                    condensed_map[condensed_i][condensed_j] = UNCLASSIFIED_OBJECT
+                elif (map[i][j] == FREE_SPACE and condensed_map[condensed_i][condensed_j] != UNCLASSIFIED_OBJECT):
+                    condensed_map[condensed_i][condensed_j] = FREE_SPACE
+        return condensed_map
 
     @staticmethod
-    def distance_traveled(time_elapsed, speed_intervals) -> int:
-        """
-        speed / time
-        :return: distance in cm
-        """
-        if len(speed_intervals) == 0:
-            return 0
-        mean_speed = np.mean(speed_intervals)
-        distance =  mean_speed * time_elapsed
-        # print(f"Distance traveled {distance}cm")
+    def print_map(map):
+        print('\n\n', end='')
+        map_height = map.shape[0]
+        map_width = map.shape[1]
+        for row in range(map_height):
+            for col in range(map_width):
+                print(map[row][col], end=', ')
+            print('\n', end='')
 
-        return distance
+    def GetUltrasonicMapping(self):
+        # clear the map
+        self.main_map = np.full([self.map_height,self.map_width], UNKNOWN_SPACE, dtype=int)
 
-    @staticmethod
-    def speed() -> float:
-        return 30.0
+        # scan a few times and fill the main map with objects
+        for i in range(64):
+            self.scan_step_return_distances()
 
-finished = False
+        # mark free spaces
+        self.mark_free_space()
+        
+        # fill the condensed version of the map using the main map
+        condensed_map = self.condense_map(self.main_map)
 
-def main():
-    # Process(target=WepPage.run).start()
-    global curr_position
-    # Starting point
-    curr_position = Point(200, 0)
-    end = Point(200, 250)
+        self.print_map(condensed_map)
 
-    done = False
-    i = 0
-    while not done:
-        # ================================
-        # Scan 180 FOV, Update map, pad the objects
-        print("Finding objects")
-        Ultrasonic.find_objects()
+        # face forward again and print the condensed map
+        servo.setServoPwm('0', 0)
 
-        print("Padding world map for clearance")
-        padded_map = Ultrasonic.pad_world_map()
-
-        # ================================
-        # Find best possible path
-        print("Searching for best possible path")
-        came_from, cost_so_far = AStar.search(padded_map, curr_position, end)
-
-        new_map = np.full(np.shape(padded_map), -1)
-        for point, cost in cost_so_far.items():
-            new_map[point.y][point.x] = cost
-
-        last_elm = end
-        path_forward = [last_elm]
-        while last_elm is not None:
-            last_elm = came_from[last_elm]
-            path_forward.append(last_elm)
-
-        # Path is reversed
-        path_forward.reverse()
-
-        #cutoff part of path to rescan
-        cutoff = 70
-        if len(path_forward) > cutoff:
-            path_forward = path_forward[0:cutoff]
-        else:
-            # Last leg of the journey
-            print("To the finish")
-            done = True
-
-
-        # ================================
-        # Save photo of path
-        cmap = plt.cm.gray
-        norm = plt.Normalize(padded_map.min(), padded_map.max())
-        rgba = cmap(norm(padded_map))
-
-        print("Saving map to png")
-        for point in path_forward:
-            if point is not None:
-                # Set path pixels to blue
-                rgba[point.y][point.x] = 0, 0, 1, 1
-
-        # Set start and end pixel
-        rgba[end.y][end.x] = 1, 0, 0, 1
-        rgba[curr_position.y][curr_position.x] = 0, 1, 0, 1
-
-        plt.imshow(rgba, interpolation='nearest')
-        plt.savefig(f"/home/pi/Desktop/map_search_{i}.png")
-
-        # ================================
-        # Compute moves and move
-        print("Computing moves to make")
-        moves = Movement.compute_moves(path_forward)
-        for move in moves:
-            print(f"Make move {move.type} for {move.amount}")
-            if move.type == Movement.Move.Type.Forward:
-                Movement.move_forward()
-                Location.monitor_location(stop_at=move.amount)
-            elif move.type == Movement.Move.Type.Left:
-                Movement.turn_left()
-            else:
-                Movement.turn_right()
-            time.sleep(1)
-
-        i += 1
-        print(f"Ended at {curr_position}")
-
-    finished = True
-    thread.join()
-
+        return condensed_map
+            
 if __name__ == "__main__":
-    try:
-        main()
-    finally:
-        finished = True
-        motor.setMotorModel(0,0,0,0)
+    scanner = UltrasonicMap()
+    scanner.GetUltrasonicMapping()
+
+        
