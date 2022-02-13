@@ -85,7 +85,7 @@ def get_neighbors(pos):
 
         if (r < MAZE.shape[0] and r >= 0):
             if (c < MAZE.shape[1] and c >= 0):
-                if MAZE[r][c] == constants.FREE_SPACE or MAZE[r][c] == constants.STOP_SIGN_ADJACENT:
+                if MAZE[r][c] == constants.FREE_SPACE:
                     neighbors.append((r, c))
     
     return neighbors
