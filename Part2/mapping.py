@@ -2,7 +2,7 @@ import math
 import numpy as np
 from constants import *
 from Ultrasonic import *
-from Servo import *
+from servo import *
 from PCA9685 import PCA9685
 import RPi.GPIO as GPIO
 
