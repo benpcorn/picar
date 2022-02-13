@@ -13,9 +13,9 @@ class UltrasonicMap:
     ANGLE_RANGE = 160
     STEP = 10
     us_step = STEP
-    current_angle = 0
-    max_angle = 160
-    min_angle = 0
+    current_angle = -80
+    max_angle = ANGLE_RANGE/2
+    min_angle = -ANGLE_RANGE/2
     prev_point = (0,0)
     map_height = 100
     map_width = 200
@@ -60,7 +60,7 @@ class UltrasonicMap:
             self.us_step = self.STEP
         
         # find the distance to the object and the x/y components
-        servo.setServoPwm('0',self.current_angle)
+        servo.setServoPwm('0',self.current_angle + 80)
         distance = us.get_distance()
         y_idx = round((math.cos(math.radians((self.current_angle)))*distance))
         x_idx = round((math.sin(math.radians((self.current_angle)))*distance))
