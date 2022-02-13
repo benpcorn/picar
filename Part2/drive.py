@@ -81,20 +81,20 @@ class Drive:
         
         if (dir_num > 0):
             motor.setMotorModel(-2000,-2000,500,500) # turn right
-            time.sleep(3)
+            time.sleep(1)
             motor.setMotorModel(0,0,0,0)
             
         elif (dir_num < 0):
             motor.setMotorModel(500,500,-2000,-2000) # turn left
-            time.sleep(3)
+            time.sleep(1)
             motor.setMotorModel(0,0,0,0)
 
         self.map.orientation = new_dir   
 
     def translate(self): 
         
-        motor.setMotorModel(-2000,-2000,-2000,-2000) # forward
-        time.sleep(3)
+        motor.setMotorModel(-1000,-1000,-1000,-1000) # forward
+        time.sleep(1)
         motor.setMotorModel(0,0,0,0)
         self.update_pos()
 
