@@ -6,6 +6,8 @@ from servo import *
 from PCA9685 import PCA9685
 import RPi.GPIO as GPIO
 
+us = Ultrasonic()
+servo = Servo()
 
 class UltrasonicMap:
     ANGLE_RANGE = 160
@@ -18,8 +20,6 @@ class UltrasonicMap:
     map_height = 100
     map_width = 200
     main_map = np.full([map_height,map_width], UNKNOWN_SPACE, dtype=int)
-    us = Ultrasonic()
-    servo = Servo()
 
     def plotLine(self, x0, y0, x1, y1, type=UNCLASSIFIED_OBJECT):
         hit_object = False
