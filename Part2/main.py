@@ -5,7 +5,6 @@ import argparse
 import threading
 
 import mapping as mp
-import detect_object as do
 import routing as rt
 import map as ma
 import drive as dv
